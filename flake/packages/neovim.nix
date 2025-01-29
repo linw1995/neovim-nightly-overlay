@@ -46,37 +46,7 @@ let
       # src = deps.libuv;
     };
     lua = pkgs.luajit;
-    tree-sitter =
-      (pkgs.tree-sitter.override {
-        rustPlatform = pkgs.rustPlatform // {
-          buildRustPackage =
-            args:
-            pkgs.rustPlatform.buildRustPackage (
-              args
-              // {
-                version = "bundled";
-                src = deps.treesitter;
-                cargoHash = "sha256-d3OCoR+uxfXvZbI+a2enz5MyCLMoD595DhFjf9l63lA=";
-              }
-            );
-        };
-      }).overrideAttrs
-        (oa: {
-          postPatch = ''
-            ${oa.postPatch}
-            sed -e 's/playground::serve(.*$/println!("ERROR: web-ui is not available in this nixpkgs build; enable the webUISupport"); std::process::exit(1);/' \
-                -i cli/src/main.rs
-          '';
-        });
-
-    treesitter-parsers =
-      let
-        grammars = lib.filterAttrs (name: _: lib.hasPrefix "treesitter_" name) deps;
-      in
-      lib.mapAttrs' (
-        name: value: lib.nameValuePair (lib.removePrefix "treesitter_" name) { src = value; }
-      ) grammars;
-  } // linuxOnlyOverrides;
+  };
 in
 (pkgs.neovim-unwrapped.override overrides).overrideAttrs (oa: {
   version = "nightly";
